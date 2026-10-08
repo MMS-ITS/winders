@@ -28,25 +28,27 @@ Consolidated technical specification for three winding machines: **soft winding*
 All four figures (three dimensioned bobbin drawings and the finished-package
 photograph) are the original images extracted from the source PDFs — not redrawn.
 
-## Seller due-diligence checklist
+## Seller technical compliance checklist
 
-**`Winding_Machines_Seller_Due_Diligence_Checklist.pdf`** — 8-page A4 landscape
-form with **74 requirement lines**, each traced back to a section of the
-specification. The seller marks **YES** (complies) or **NO** (does not comply)
-and records remarks or observations.
+**`Winding_Machines_Seller_Due_Diligence_Checklist.pdf`** — 3-page A4 landscape
+form with **21 requirement lines**. The seller marks **YES** (complies) or
+**NO** (does not comply) and records remarks or observations.
 
 | Section | Lines | Content |
 |---|---|---|
-| A | 5 | Common electrical specification |
-| B | 18 | Machine 01 — Soft Winding |
-| C | 15 | Machine 02 — Hard Winding |
-| D | 14 | Machine 03 — Sewing Thread |
-| E | 6 | Open items requiring the seller's position (the gaps flagged in §8.2) |
-| F | 16 | Supply scope, documentation and support — not covered by the issued specification |
-| G | — | Compliance summary, statement of deviations, signed declaration |
+| A | 2 | Electrical supply — all three machines |
+| B | 6 | Soft Winding Machine (48 spindles) |
+| C | 6 | Hard Winding Machine (60 spindles) |
+| D | 7 | Sewing Thread Machine (48 spindles) |
+| E | — | Signed declaration |
+
+Scope is **the technical specification only** — commercial terms, documentation
+and support are deliberately not covered. Each line is one coherent technical
+requirement (a complete yarn range, a complete bobbin geometry) rather than one
+atomic figure, to keep the form short enough to be completed properly.
 
 The PDF is a **fillable form**: YES/NO are mutually exclusive AcroForm radio
-groups (74 groups) and every remarks box is a real text field (92 fields), so it
+groups (21 groups) and every remarks box is a real text field (29 fields), so it
 can be completed in any PDF reader or printed and filled in by hand.
 
 Partial or conditional compliance counts as **NO** — this is stated in the
