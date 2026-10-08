@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-Builds a seller due-diligence / compliance checklist for the three winding
-machines, derived line-by-line from Winding_Machines_Combined_Specification.pdf.
+Builds a brief technical compliance checklist for the seller to complete.
 
-Every requirement line gives the seller a mutually exclusive YES / NO choice
-(real AcroForm radio group) plus a free-text Remarks field, so the form can be
-completed digitally in any PDF reader or printed and filled in by hand.
+Scope is limited to the technical specification: electrical supply and the
+three machines. 21 requirement lines, grouped so that each line is one
+coherent technical requirement.
+
+Each line is a mutually exclusive YES / NO AcroForm radio group plus a
+free-text Remarks field, so the form can be completed in any PDF reader or
+printed and filled in by hand.
 
 Output: Winding_Machines_Seller_Due_Diligence_Checklist.pdf
 """
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_JUSTIFY
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
@@ -36,16 +38,15 @@ MARGIN = 15 * mm
 BOTTOM_EXTRA = 4 * mm
 CONTENT_W = PAGE_W - 2 * MARGIN
 
-DOC_TITLE = "Seller Due-Diligence & Compliance Checklist"
+DOC_TITLE = "Technical Compliance Checklist"
 DOC_SUB = "Winding Machines · Soft Winding · Hard Winding · Sewing Thread"
 
-# column widths -------------------------------------------------------------
-C_ITEM = 32
-C_REF = 34
-C_YN = 30
-C_REQ = 296
-C_REM = CONTENT_W - (C_ITEM + C_REF + 2 * C_YN + C_REQ)
-COLS = [C_ITEM, C_REQ, C_REF, C_YN, C_YN, C_REM]
+# columns: # | requirement | yes | no | remarks
+C_ITEM = 30
+C_YN = 34
+C_REQ = 328
+C_REM = CONTENT_W - (C_ITEM + 2 * C_YN + C_REQ)
+COLS = [C_ITEM, C_REQ, C_YN, C_YN, C_REM]
 
 
 def _p(name, **kw):
@@ -56,29 +57,24 @@ def _p(name, **kw):
 
 
 S = {
-    "cover_kicker": _p("ck", fontName="Helvetica-Bold", fontSize=8.5,
-                       leading=11, textColor=colors.white),
-    "cover_title": _p("ct", fontName="Helvetica-Bold", fontSize=25, leading=29,
-                      textColor=colors.white),
-    "cover_sub": _p("cs", fontSize=11, leading=15,
-                    textColor=colors.HexColor("#C5D3E2")),
-    "h1": _p("h1", fontName="Helvetica-Bold", fontSize=15, leading=19,
-             textColor=NAVY, spaceAfter=2),
-    "h1sub": _p("h1s", fontSize=9, leading=12.5, textColor=MUTED, spaceAfter=7),
+    "kicker": _p("ck", fontName="Helvetica-Bold", fontSize=8.5, leading=11,
+                 textColor=colors.white),
+    "title": _p("ct", fontName="Helvetica-Bold", fontSize=24, leading=28,
+                textColor=colors.white),
+    "sub": _p("cs", fontSize=11, leading=15,
+              textColor=colors.HexColor("#C5D3E2")),
     "h2": _p("h2", fontName="Helvetica-Bold", fontSize=10.5, leading=14,
-             textColor=NAVY, spaceBefore=8, spaceAfter=4),
-    "body": _p("body", alignment=TA_JUSTIFY, spaceAfter=5),
-    "bullet": _p("bul", fontSize=8.6, leading=12, leftIndent=11,
+             textColor=NAVY, spaceBefore=6, spaceAfter=4),
+    "body": _p("body", spaceAfter=4),
+    "bullet": _p("bul", fontSize=8.8, leading=12.5, leftIndent=11,
                  bulletIndent=2, spaceAfter=2.5),
-    "note": _p("note", fontSize=8.2, leading=11.5, textColor=MUTED,
-               alignment=TA_JUSTIFY),
-    "th": _p("th", fontName="Helvetica-Bold", fontSize=7.6, leading=10,
+    "note": _p("note", fontSize=8.2, leading=11.5, textColor=MUTED),
+    "th": _p("th", fontName="Helvetica-Bold", fontSize=7.8, leading=10,
              textColor=colors.white),
-    "td": _p("td", fontSize=8.6, leading=11.5),
-    "td_b": _p("tdb", fontName="Helvetica-Bold", fontSize=8.6, leading=11.5,
+    "td": _p("td", fontSize=9, leading=12.5),
+    "td_b": _p("tdb", fontName="Helvetica-Bold", fontSize=8.8, leading=12,
                textColor=NAVY),
-    "ref": _p("ref", fontSize=7.6, leading=10, textColor=MUTED),
-    "item": _p("item", fontName="Helvetica-Bold", fontSize=8.2, leading=11,
+    "item": _p("item", fontName="Helvetica-Bold", fontSize=8.6, leading=11,
                textColor=NAVY_MID),
     "secbar": _p("sb", fontName="Helvetica-Bold", fontSize=9.5, leading=12.5,
                  textColor=colors.white),
@@ -97,9 +93,7 @@ def bullets(items):
 
 # ---------------------------------------------------------------- form widgets
 class Radio(Flowable):
-    """A single AcroForm radio button belonging to group `group`."""
-
-    def __init__(self, group, value, size=10):
+    def __init__(self, group, value, size=11):
         Flowable.__init__(self)
         self.group, self.value = group, value
         self.width = self.height = size
@@ -109,15 +103,13 @@ class Radio(Flowable):
         self.canv.acroForm.radio(
             name=self.group, value=self.value, selected=False,
             x=0, y=0, size=self.size, shape="square", buttonStyle="cross",
-            borderWidth=0.7, borderColor=NAVY_MID, fillColor=colors.white,
+            borderWidth=0.8, borderColor=NAVY_MID, fillColor=colors.white,
             textColor=NAVY, forceBorder=True, relative=True,
         )
 
 
 class TextBox(Flowable):
-    """A borderless AcroForm text field sized to its table cell."""
-
-    def __init__(self, name, width, height=15, multiline=True, fontsize=8):
+    def __init__(self, name, width, height=15, multiline=True, fontsize=8.5):
         Flowable.__init__(self)
         self.name = name
         self.width, self.height = width, height
@@ -133,18 +125,16 @@ class TextBox(Flowable):
         )
 
 
-# ---------------------------------------------------------------- table helpers
-HEADER = ["#", "REQUIREMENT", "SPEC REF", "YES", "NO",
-          "REMARKS / OBSERVATIONS"]
-
+# ---------------------------------------------------------------- tables
+HEADER = ["#", "REQUIREMENT", "YES", "NO", "REMARKS / OBSERVATIONS"]
 _counter = {"n": 0}
 
 
 def section_bar(letter, title, subtitle=""):
     txt = f"SECTION {letter} &nbsp;—&nbsp; {title}"
     if subtitle:
-        txt += (f'&nbsp;&nbsp;<font size="8" color="#C5D3E2">'
-                f'{subtitle}</font>')
+        txt += (f'&nbsp;&nbsp;<font size="8" color="#C5D3E2">{subtitle}'
+                f'</font>')
     t = Table([[Paragraph(txt, S["secbar"])]], colWidths=[CONTENT_W],
               hAlign="LEFT")
     t.setStyle(TableStyle([
@@ -158,17 +148,15 @@ def section_bar(letter, title, subtitle=""):
 
 
 def checklist_table(rows):
-    """rows: list of (code, requirement_html, spec_ref)."""
     data = [[Paragraph(h, S["th"]) for h in HEADER]]
-    for code, req, ref in rows:
+    for code, req in rows:
         _counter["n"] += 1
         data.append([
             Paragraph(code, S["item"]),
             Paragraph(req, S["td"]),
-            Paragraph(ref, S["ref"]),
             Radio(code, "yes"),
             Radio(code, "no"),
-            TextBox(f"{code}_remarks", C_REM - 8, 17),
+            TextBox(f"{code}_remarks", C_REM - 8, 20),
         ])
     t = Table(data, colWidths=COLS, repeatRows=1, hAlign="LEFT")
     style = [
@@ -176,44 +164,22 @@ def checklist_table(rows):
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("GRID", (0, 0), (-1, -1), 0.5, GREY_LINE),
         ("LINEBELOW", (0, 0), (-1, 0), 0.8, NAVY),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        # yes / no columns
-        ("ALIGN", (3, 0), (4, -1), "CENTER"),
-        ("BACKGROUND", (3, 1), (4, -1), GREY_BG),
-        ("LINEBEFORE", (3, 1), (3, -1), 0.8, NAVY_MID),
-        ("LINEAFTER", (4, 1), (4, -1), 0.8, NAVY_MID),
-        # remarks column
-        ("BACKGROUND", (5, 1), (5, -1), FIELD_BG),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("LEFTPADDING", (0, 0), (-1, -1), 7),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+        ("ALIGN", (2, 0), (3, -1), "CENTER"),
+        ("BACKGROUND", (2, 1), (3, -1), GREY_BG),
+        ("LINEBEFORE", (2, 1), (2, -1), 0.8, NAVY_MID),
+        ("LINEAFTER", (3, 1), (3, -1), 0.8, NAVY_MID),
+        ("BACKGROUND", (4, 1), (4, -1), FIELD_BG),
         ("ALIGN", (0, 0), (0, -1), "CENTER"),
-        ("ALIGN", (2, 0), (2, -1), "CENTER"),
     ]
     t.setStyle(TableStyle(style))
     return t
 
 
-def field_row(label, name, width, height=16, label_w=78):
-    """Label + fillable text field, as a single-row table."""
-    data = [[Paragraph(label, S["fieldlbl"]),
-             TextBox(name, width - label_w - 12, height)]]
-    t = Table(data, colWidths=[label_w, width - label_w], hAlign="LEFT")
-    t.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("BACKGROUND", (0, 0), (0, 0), GREY_BG),
-        ("BACKGROUND", (1, 0), (1, 0), FIELD_BG),
-        ("GRID", (0, 0), (-1, -1), 0.5, GREY_LINE),
-        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-    ]))
-    return t
-
-
 def fields_row(pairs, label_ws, height=16):
-    """One table row of (label, fillable field) pairs spanning CONTENT_W."""
     n = len(pairs)
     fw = (CONTENT_W - sum(label_ws)) / n
     cells, widths = [], []
@@ -235,21 +201,6 @@ def fields_row(pairs, label_ws, height=16):
         style.append(("BACKGROUND", (i, 0), (i, 0), GREY_BG))
         style.append(("BACKGROUND", (i + 1, 0), (i + 1, 0), FIELD_BG))
     t.setStyle(TableStyle(style))
-    return t
-
-
-def two_col(left, right, gap=10):
-    w = (CONTENT_W - gap) / 2
-    t = Table([[left, right]], colWidths=[w + gap, w], hAlign="LEFT")
-    t.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LEFTPADDING", (0, 0), (0, 0), 0),
-        ("RIGHTPADDING", (0, 0), (0, 0), gap),
-        ("LEFTPADDING", (1, 0), (1, 0), 0),
-        ("RIGHTPADDING", (1, 0), (1, 0), 0),
-        ("TOPPADDING", (0, 0), (-1, -1), 0),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-    ]))
     return t
 
 
@@ -275,9 +226,7 @@ def _footer(canv, doc):
     canv.setFont("Helvetica", 7)
     canv.setFillColor(MUTED)
     canv.drawString(MARGIN, 9 * mm, DOC_TITLE)
-    canv.drawCentredString(PAGE_W / 2, 9 * mm,
-                           "Seller: ______________________________")
-    canv.drawRightString(PAGE_W - MARGIN, 9 * mm, f"Page {doc.page}")
+    canv.drawRightString(PAGE_W - MARGIN, 9 * mm, f"Page {doc.page} of 3")
     canv.setStrokeColor(GREY_LINE)
     canv.setLineWidth(0.5)
     canv.line(MARGIN, 12 * mm, PAGE_W - MARGIN, 12 * mm)
@@ -286,16 +235,16 @@ def _footer(canv, doc):
 
 def draw_cover(canv, doc):
     canv.saveState()
-    band_h = 52 * mm
+    band_h = 53 * mm
     canv.setFillColor(NAVY)
     canv.rect(0, PAGE_H - band_h, PAGE_W, band_h, stroke=0, fill=1)
     canv.setStrokeColor(colors.HexColor("#2E4C6D"))
     canv.setLineWidth(1)
-    for r in range(10, 70, 8):
-        canv.circle(PAGE_W - 30 * mm, PAGE_H - band_h + 14 * mm, r,
+    for r in range(10, 66, 8):
+        canv.circle(PAGE_W - 28 * mm, PAGE_H - band_h + 13 * mm, r,
                     stroke=1, fill=0)
     canv.setFillColor(ACCENT)
-    canv.rect(0, PAGE_H - band_h, PAGE_W, 2.6 * mm, stroke=0, fill=1)
+    canv.rect(0, PAGE_H - band_h, PAGE_W, 2.4 * mm, stroke=0, fill=1)
     canv.restoreState()
     _footer(canv, doc)
 
@@ -316,156 +265,47 @@ def draw_inner(canv, doc):
 
 # ---------------------------------------------------------------- requirements
 SEC_A = [
-    ("A1", "Machine is suitable for a <b>three-phase supply, 380–440 V AC</b>, "
-           "with protective earth (PE) and neutral (N).", "§2"),
-    ("A2", "Machine is suitable for a <b>single-phase supply, 220–230 V AC</b>, "
-           "with protective earth (PE) and neutral (N).", "§2"),
-    ("A3", "Machine is rated for a <b>50 Hz</b> supply frequency.", "§2"),
-    ("A4", "PE and N are brought to the machine terminal box in both supply "
-           "arrangements.", "§2"),
-    ("A5", "State the installed / connected electrical load per machine "
-           "(kW) in Remarks.", "§2"),
+    ("A1", "Electrical supply: <b>3PH 380–440 V AC</b> or "
+           "<b>1PH 220–230 V AC</b>, with PE and N."),
+    ("A2", "Supply frequency: <b>50 Hz</b>."),
 ]
 
 SEC_B = [
-    ("B1", "Machine is built with <b>48 winding spindles</b>.", "§4.1"),
-    ("B2", "Each spindle is independently threaded and can be stopped "
-           "without interrupting the remaining spindles.", "§7.1"),
-    ("B3", "Winds <b>cotton yarn, counts 10/1 to 50/1</b>.", "§4.2"),
-    ("B4", "Winds <b>cotton yarn, counts 20/2 to 100/2</b>.", "§4.2"),
-    ("B5", "Winds <b>spun polyester, counts 20/2 to 60/2 SSP</b>.", "§4.2"),
-    ("B6", "Winds <b>filament polyester, 50 D to 300 D</b>.", "§4.2"),
-    ("B7", "Runs the full declared yarn range without substituting yarn-path "
-           "components (guides, tensioners, traverse elements).", "§7.1"),
-    ("B8", "Produces a finished package of <b>160 mm diameter</b>.", "§4.3"),
-    ("B9", "Produces a finished package of <b>1 kg</b> weight.", "§4.3"),
-    ("B10", "Achieves target package density <b>0.30 – 0.35 g/cm³ for "
-            "cotton</b>.", "§4.3"),
-    ("B11", "Achieves target package density <b>0.35 – 0.40 g/cm³ for "
-            "polyester</b>.", "§4.3"),
-    ("B12", "Density is <b>uniform between package core and surface</b>, not "
-            "merely on average across the package.", "§7.1"),
-    ("B13", "Achieves a winding speed of <b>1 000 m/min</b> (maximum).",
-     "§4.3"),
-    ("B14", "Accepts a bobbin of <b>160.40 mm overall length</b> with a "
-            "<b>143.00 mm</b> main body.", "§4.4"),
-    ("B15", "Accepts bobbin stepped end sections of <b>10.40 mm and "
-            "7.00 mm</b>.", "§4.4"),
-    ("B16", "Accepts left-end bobbin diameters <b>54.70 / 49.60 / "
-            "43.15 mm</b>.", "§4.4"),
-    ("B17", "Accepts right-end bobbin diameters <b>43.15 / 48.80 / "
-            "52.90 mm</b>.", "§4.4"),
-    ("B18", "Resulting package is suitable for <b>package dyeing</b> — dye "
-            "liquor penetrates to the innermost layers at the same rate as "
-            "the outermost.", "§7.1"),
+    ("B1", "<b>48 winding spindles.</b>"),
+    ("B2", "Yarn range: cotton <b>10/1–50/1</b> and <b>20/2–100/2</b>; spun "
+           "polyester <b>20/2–60/2 SSP</b>; filament polyester "
+           "<b>50 D–300 D</b>."),
+    ("B3", "Finished package: <b>160 mm diameter</b>, <b>1 kg</b>."),
+    ("B4", "Package density: <b>0.30–0.35 g/cm³</b> for cotton, "
+           "<b>0.35–0.40 g/cm³</b> for polyester."),
+    ("B5", "Winding speed: up to <b>1 000 m/min</b>."),
+    ("B6", "Bobbin: <b>160.40 mm</b> overall (143.00 mm body), ends "
+           "10.40 / 7.00 mm, diameters 54.70 / 49.60 / 43.15 mm and "
+           "43.15 / 48.80 / 52.90 mm."),
 ]
 
 SEC_C = [
-    ("C1", "Machine is built with <b>60 winding spindles</b>.", "§5.1"),
-    ("C2", "Winds <b>cotton yarn, counts 10/1 to 50/1</b>.", "§5.2"),
-    ("C3", "Winds <b>cotton yarn, counts 20/2 to 100/2</b>.", "§5.2"),
-    ("C4", "Produces a finished cone of <b>150 mm top diameter</b>.", "§5.3"),
-    ("C5", "Produces a finished cone of <b>180 mm bottom diameter</b>.",
-     "§5.3"),
-    ("C6", "Produces a finished cone of <b>155 mm height</b>.", "§5.3"),
-    ("C7", "Produces a finished package of <b>1 kg</b> weight.", "§5.3"),
-    ("C8", "Achieves target hardness / density <b>0.40 – 0.50 g/cm³</b>.",
-     "§5.3"),
-    ("C9", "Achieves a winding speed of <b>1 000 m/min</b> (maximum).",
-     "§5.3"),
-    ("C10", "Accepts a conical bobbin of <b>173.00 mm overall length</b>.",
-     "§5.4"),
-    ("C11", "Accepts large-end bobbin diameters <b>71.00 / 67.00 mm</b>.",
-     "§5.4"),
-    ("C12", "Accepts small-end bobbin diameters <b>37.00 / 26.00 mm</b>.",
-     "§5.4"),
-    ("C13", "Tension system sustains and regulates the higher tension needed "
-            "to reach 0.40 – 0.50 g/cm³.", "§7.2"),
-    ("C14", "Traverse control holds <b>square, stable cone edges</b> at the "
-            "target density (no soft or broken-down edges).", "§7.2"),
-    ("C15", "Finished cone is stable in stacking, handling and transport — "
-            "does not collapse, telescope or shed layers.", "§7.2"),
+    ("C1", "<b>60 winding spindles.</b>"),
+    ("C2", "Yarn range: cotton <b>10/1–50/1</b> and <b>20/2–100/2</b>."),
+    ("C3", "Finished cone: <b>150 mm top diameter</b>, <b>180 mm bottom "
+           "diameter</b>, <b>155 mm height</b>, <b>1 kg</b>."),
+    ("C4", "Package hardness / density: <b>0.40–0.50 g/cm³</b>."),
+    ("C5", "Winding speed: up to <b>1 000 m/min</b>."),
+    ("C6", "Bobbin: conical, <b>173.00 mm</b> overall, large end "
+           "71.00 / 67.00 mm, small end 37.00 / 26.00 mm."),
 ]
 
 SEC_D = [
-    ("D1", "Machine is built with <b>48 winding spindles</b>.", "§6.1"),
-    ("D2", "Winds <b>spun polyester, counts 20/2 to 100/2 SSP</b>.", "§6.2"),
-    ("D3", "Winds <b>spun polyester, counts 16/3 to 80/3 SSP</b> "
-           "(three-ply).", "§6.2"),
-    ("D4", "Winds three-ply thread <b>without introducing or releasing "
-           "twist</b> that would cause snarling at the point of use.",
-     "§7.3"),
-    ("D5", "Achieves a thread length / weight of <b>4 000 m per 100 g</b> at "
-           "yarn count 50/2 spun.", "§6.3"),
-    ("D6", "Length measurement and cut-off guarantee the declared length on "
-           "<b>every package</b>, not merely on batch average.", "§7.3"),
-    ("D7", "Achieves a winding speed of <b>1 400 rpm</b> (maximum).", "§6.3"),
-    ("D8", "<b>Active yarn tension control is provided</b> and does not drift "
-           "as the package builds (not open-loop or purely mechanical).",
-     "§6.3"),
-    ("D9", "Tension is consistent <b>within a package and between "
-           "packages</b>, preserving thread elongation and strength.",
-     "§7.3"),
-    ("D10", "<b>Automatic doffing is provided</b> — completed packages are "
-            "ejected and empty carriers introduced without manual "
-            "intervention.", "§6.3"),
-    ("D11", "<b>Automatic feeding / yarn take-up is provided.</b>", "§6.3"),
-    ("D12", "Accepts a conical bobbin of <b>114.00 mm overall length</b>.",
-     "§6.4"),
-    ("D13", "Accepts large-end bobbin diameters <b>38.00 / 35.00 mm</b>.",
-     "§6.4"),
-    ("D14", "Accepts small-end bobbin diameters <b>28.00 / 12.60 mm</b>.",
-     "§6.4"),
-]
-
-SEC_E = [
-    ("E1", "<b>Speed basis for the sewing thread machine.</b> Confirm that "
-           "1 400 rpm is the correct basis, and state the equivalent linear "
-           "speed in m/min together with the reference diameter used.",
-     "§8.2"),
-    ("E2", "<b>Sewing thread package envelope.</b> State the finished package "
-           "diameter, height and weight for the sewing thread machine "
-           "(not given in the issued documents).", "§8.2"),
-    ("E3", "<b>Tension control on the soft and hard winders.</b> State "
-           "whether active tension control is offered on these two machines, "
-           "and whether it is standard or optional.", "§8.2"),
-    ("E4", "<b>Automatic doffing on the soft and hard winders.</b> State "
-           "whether automatic doffing / feeding is offered on these two "
-           "machines, and whether standard or optional.", "§8.2"),
-    ("E5", "<b>Density measurement basis.</b> State whether quoted densities "
-           "are measured on the wound yarn mass alone or on gross package "
-           "volume including the carrier.", "§8.2"),
-    ("E6", "<b>Hard winder density.</b> Confirm the target is "
-           "<b>0.40 – 0.50 g/cm³</b> (issued as “0.40 – .050 gm/cm³”, read as "
-           "a typographical error).", "§8.1"),
-]
-
-SEC_F = [
-    ("F1", "Machine footprint and installation layout drawings are provided.",
-     "—"),
-    ("F2", "Utility requirements are stated — compressed air, vacuum, "
-           "extraction, cooling (as applicable).", "—"),
-    ("F3", "Noise emission level is stated.", "—"),
-    ("F4", "Applicable safety conformity is declared (e.g. CE marking) with "
-           "the standards listed.", "—"),
-    ("F5", "Fixed guarding, interlocks and emergency-stop circuits conform to "
-           "the declared safety standard.", "—"),
-    ("F6", "Operation and maintenance manuals are supplied in English.", "—"),
-    ("F7", "Electrical schematics and a spare-parts list are supplied.", "—"),
-    ("F8", "A recommended spare-parts package is quoted.", "—"),
-    ("F9", "Installation and commissioning are included in the offer.", "—"),
-    ("F10", "Operator and maintenance training is included in the offer.",
-     "—"),
-    ("F11", "Warranty period is stated.", "—"),
-    ("F12", "Spare-parts availability period after delivery is stated.", "—"),
-    ("F13", "Delivery lead time from order is stated.", "—"),
-    ("F14", "A factory acceptance test is offered, including <b>sample "
-            "packages wound to the specified density and dimensions</b> for "
-            "approval before shipment.", "—"),
-    ("F15", "Reference installations running comparable machines can be "
-            "provided.", "—"),
-    ("F16", "Any deviation from this specification is listed in full, with "
-            "the technical reason and the proposed alternative.", "—"),
+    ("D1", "<b>48 winding spindles.</b>"),
+    ("D2", "Yarn range: spun polyester <b>20/2–100/2 SSP</b> and "
+           "<b>16/3–80/3 SSP</b>."),
+    ("D3", "Thread length / weight: <b>4 000 m per 100 g</b> at count "
+           "50/2 spun."),
+    ("D4", "Winding speed: up to <b>1 400 rpm</b>."),
+    ("D5", "<b>Yarn tension control provided.</b>"),
+    ("D6", "<b>Automatic doffing and feeding provided.</b>"),
+    ("D7", "Bobbin: conical, <b>114.00 mm</b> overall, large end "
+           "38.00 / 35.00 mm, small end 28.00 / 12.60 mm."),
 ]
 
 
@@ -473,136 +313,65 @@ SEC_F = [
 def build_story():
     st = []
 
-    # ========================================================== COVER
-    st.append(Spacer(1, 9 * mm))
-    st.append(P("TO BE COMPLETED AND RETURNED BY THE SELLER", "cover_kicker"))
-    st.append(Spacer(1, 6))
-    st.append(P("Due-Diligence &amp; Compliance Checklist", "cover_title"))
-    st.append(Spacer(1, 2))
+    # ---------------------------------------------------------- header
+    st.append(Spacer(1, 11 * mm))
+    st.append(P("TO BE COMPLETED AND RETURNED BY THE SELLER", "kicker"))
+    st.append(Spacer(1, 5))
+    st.append(P("Technical Compliance Checklist", "title"))
+    st.append(Spacer(1, 1))
     st.append(P("Winding Machines&nbsp; · &nbsp;Soft Winding&nbsp; · &nbsp;"
-                "Hard Winding&nbsp; · &nbsp;Sewing Thread", "cover_sub"))
-    st.append(Spacer(1, 20 * mm))
+                "Hard Winding&nbsp; · &nbsp;Sewing Thread", "sub"))
+    st.append(Spacer(1, 13 * mm))
 
-    st.append(P("How to complete this checklist", "h2"))
     st += bullets([
-        "Mark <b>exactly one box — YES or NO — for every numbered line</b>. "
-        "Leave no line blank.",
-        "<b>YES</b> means the equipment offered meets the requirement in full, "
-        "exactly as stated.",
-        "<b>NO</b> means the requirement is not met, or is met only partially, "
-        "conditionally, or by an alternative arrangement.",
-        "Every <b>NO</b> must be explained in <i>Remarks</i>. State what is "
-        "offered instead and the technical reason.",
-        "Partial or conditional compliance is <b>NO</b>, not YES. A qualified "
-        "YES will be read as a deviation.",
-        "Section E items are <b>requests for information</b> — mark YES once "
-        "the information is supplied in <i>Remarks</i>.",
-        "Section F covers supply scope and support that the issued "
-        "specification did not address; it is included so the commercial "
-        "position is on record.",
-        "Spec references (§) point to sections of the consolidated document "
-        "<i>Winding Machine Technical Specification — Soft Winding, Hard "
-        "Winding &amp; Sewing Thread</i>.",
+        "Mark <b>YES</b> or <b>NO</b> on every line. Leave none blank.",
+        "<b>YES</b> = the machine offered meets the requirement in full, as "
+        "stated. Anything partial or conditional is <b>NO</b>.",
+        "Explain every <b>NO</b> in <i>Remarks</i>, stating what is offered "
+        "instead.",
     ])
 
-    st.append(Spacer(1, 8))
-    st.append(P("Seller identification", "h2"))
-    LW = [92, 104]
+    st.append(Spacer(1, 7))
     st.append(fields_row([("Company", "s_company"),
-                          ("Offer / quote ref.", "s_ref")], LW, 17))
+                          ("Contact", "s_contact")], [70, 70], 16))
     st.append(Spacer(1, 3))
-    st.append(fields_row([("Contact name", "s_contact"),
-                          ("Position", "s_position")], LW, 17))
-    st.append(Spacer(1, 3))
-    st.append(fields_row([("Email / phone", "s_email"),
-                          ("Date", "s_date")], LW, 17))
-    st.append(Spacer(1, 3))
-    st.append(fields_row([("Machine model(s) offered", "s_models"),
-                          ("Country of manufacture", "s_origin")], LW, 17))
+    st.append(fields_row([("Offer ref.", "s_ref"), ("Date", "s_date")],
+                         [70, 70], 16))
 
+    st.append(Spacer(1, 11))
     st.append(NextPageTemplate("inner"))
-    st.append(PageBreak())
 
-    # ========================================================== SECTIONS
-    def block(letter, title, subtitle, rows, lead=None):
-        # never leave a section bar stranded at the foot of a page
-        out = [CondPageBreak(135), section_bar(letter, title, subtitle),
-               Spacer(1, 5)]
-        if lead:
-            out += [P(lead, "note"), Spacer(1, 5)]
-        out.append(checklist_table(rows))
-        out.append(Spacer(1, 10))
-        return out
+    # ---------------------------------------------------------- sections
+    def block(letter, title, subtitle, rows):
+        return [CondPageBreak(130), section_bar(letter, title, subtitle),
+                Spacer(1, 5), checklist_table(rows), Spacer(1, 11)]
 
-    st += block("A", "Common Electrical Specification",
-                "applies to all three machines", SEC_A)
-    st += block("B", "Machine 01 — Soft Winding", "48 spindles", SEC_B,
-                "Open, permeable packages for package dyeing. Density and its "
-                "uniformity are the primary acceptance criteria.")
-    st += block("C", "Machine 02 — Hard Winding", "60 spindles", SEC_C,
-                "Dense, firm cones for storage, transport and onward "
-                "processing. Cotton only.")
-    st += block("D", "Machine 03 — Sewing Thread", "48 spindles", SEC_D,
-                "Precision, length-controlled cones of finished sewing "
-                "thread. Tension control and automatic doffing are mandatory.")
-    st += block("E", "Open Items Requiring the Seller's Position",
-                "information requests", SEC_E,
-                "These items were identified as gaps or inconsistencies in "
-                "the issued specification. Answer each one in Remarks.")
-    st += block("F", "Supply Scope, Documentation &amp; Support",
-                "not covered by the issued specification", SEC_F,
-                "These items are not stated in the issued documents. They are "
-                "listed so that scope and support are confirmed in writing "
-                "rather than assumed.")
+    st += block("A", "Electrical Supply", "all three machines", SEC_A)
+    st += block("B", "Soft Winding Machine", "48 spindles", SEC_B)
+    st += block("C", "Hard Winding Machine", "60 spindles", SEC_C)
+    st += block("D", "Sewing Thread Machine", "48 spindles", SEC_D)
 
-    # ========================================================== SUMMARY
-    total = _counter["n"]
-    st.append(PageBreak())
-    st.append(section_bar("G", "Summary &amp; Declaration",
-                          "to be completed last"))
+    # ---------------------------------------------------------- declaration
+    st.append(CondPageBreak(190))
+    st.append(section_bar("E", "Declaration", "to be completed last"))
     st.append(Spacer(1, 8))
-    st.append(P(f"Compliance summary &nbsp;<font size='8' color='#6B7A8C'>"
-                f"({total} requirement lines in sections A to F)</font>",
-                "h2"))
-    st.append(fields_row([("Total YES", "sum_yes"),
-                          ("Total NO", "sum_no"),
-                          ("Lines with remarks", "sum_rem"),
-                          ("Total deviations", "sum_dev")],
-                         [58, 54, 90, 86], 17))
-
-    st.append(Spacer(1, 10))
-    st.append(P("Overall statement of deviations", "h2"))
-    st.append(P("List every item marked NO, with the deviation offered and "
-                "its technical justification. Continue on a separate sheet if "
-                "required.", "note"))
+    st.append(P(f"I confirm that the {_counter['n']} responses above "
+                f"accurately describe the machines offered, and that every "
+                f"<b>NO</b> is explained in the corresponding Remarks field.",
+                "body"))
     st.append(Spacer(1, 4))
-    st.append(field_row("Summary", "dev_summary", CONTENT_W, height=66,
-                        label_w=68))
-
-    st.append(Spacer(1, 12))
-    st.append(P("Declaration", "h2"))
-    st.append(P("I confirm that the responses recorded in this checklist "
-                "accurately describe the equipment offered; that every "
-                "<b>NO</b> is explained in the corresponding Remarks field; "
-                "and that no requirement marked <b>YES</b> is subject to an "
-                "unstated qualification, condition or deviation.", "body"))
-    st.append(Spacer(1, 2))
     st.append(fields_row([("Name", "d_name"), ("Position", "d_position")],
-                         [92, 104], 17))
+                         [70, 70], 16))
     st.append(Spacer(1, 3))
-    st.append(fields_row([("Signature", "d_signature"),
-                          ("Date", "d_date")], [92, 104], 32))
-    st.append(Spacer(1, 3))
-    st.append(field_row("Company stamp", "d_stamp", CONTENT_W, height=38,
-                        label_w=92))
-
+    st.append(fields_row([("Signature", "d_signature"), ("Date", "d_date")],
+                         [70, 70], 30))
     st.append(Spacer(1, 10))
     st.append(callout(
-        "Return instructions",
-        "Return this checklist complete, together with the machine layout "
-        "drawings, electrical schematics and the deviation list referred to in "
-        "item F16. An incomplete checklist, or one with unexplained NO "
-        "responses, cannot be evaluated."))
+        "Note",
+        "Requirements are taken from the consolidated document "
+        "“Winding Machine Technical Specification — Soft Winding, Hard Winding "
+        "&amp; Sewing Thread”. Technical scope only; commercial terms are not "
+        "covered by this checklist."))
     return st
 
 
@@ -612,12 +381,12 @@ def main():
         out, pagesize=landscape(A4),
         leftMargin=MARGIN, rightMargin=MARGIN,
         topMargin=MARGIN, bottomMargin=MARGIN,
-        title="Seller Due-Diligence & Compliance Checklist — Winding Machines",
+        title="Technical Compliance Checklist — Winding Machines",
         author="MMS-ITS",
-        subject="Seller compliance checklist for soft winding, hard winding "
-                "and sewing thread machines",
-        keywords="due diligence, compliance checklist, winding machine, "
-                 "deviation list, vendor assessment",
+        subject="Seller technical compliance checklist for soft winding, "
+                "hard winding and sewing thread machines",
+        keywords="compliance checklist, winding machine, technical "
+                 "specification",
     )
     cover = Frame(MARGIN, MARGIN, CONTENT_W, PAGE_H - 2 * MARGIN, id="cover",
                   leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
